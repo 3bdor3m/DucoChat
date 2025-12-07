@@ -92,28 +92,18 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       email: user.email,
     });
 
-    res.json({
-      accessToken: token,
-      tokenType: 'bearer',
-      expiresIn: 3600,
-      user: {
-        id: user.id,
-        email: user.email,
-        fullName: user.fullName,
-        subscriptionTier: user.subscriptionTier,
-      },
-    });
+    // إعداد خيارات الكوكيز
     const cookieOptions = {
-      httpOnly: true, // يمنع الوصول للكوكيز من خلال الجافاسكريبت في المتصفح
-      secure: process.env.NODE_ENV === 'production', // تفعيل HTTPS فقط في الإنتاج
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
       sameSite: process.env.NODE_ENV === 'production' ? 'strict' as const : 'lax' as const,
-      maxAge: 3600 * 1000, // ساعة واحدة (يجب أن تطابق صلاحية التوكن)
+      maxAge: 3600 * 1000, // ساعة واحدة
     };
 
     // إرسال التوكن في الكوكيز
     res.cookie('jwt', token, cookieOptions);
 
-    // إرسال رد النجاح (بدون التوكن في الـ body)
+    // إرسال الرد النهائي
     res.json({
       message: 'تم تسجيل الدخول بنجاح',
       user: {
@@ -123,6 +113,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
         subscriptionTier: user.subscriptionTier,
       },
     });
+
   } catch (error) {
     if (error instanceof AppError) throw error;
     throw new AppError('خطأ في تسجيل الدخول', 500);
